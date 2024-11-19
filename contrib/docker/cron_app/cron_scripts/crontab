@@ -1,0 +1,1 @@
+0 4 * * * /app/contrib/docker/cron_app/cron_scripts/delete_conf_codes.sh 2>&1 | tee -a /proc/1/fd/1 /var/log/cron.log

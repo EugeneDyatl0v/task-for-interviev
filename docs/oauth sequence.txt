@@ -1,0 +1,20 @@
+title OAuth
+participant User
+participant Front
+participant Api
+participant auth0
+User->Front:Enter content URL (content-url)
+Front->Api:/api/content-url
+Api->auth0:/validate-token
+auth0->Api:401
+Api->Front:401
+Front->Api:/authorize
+Api->Front:/oauth-url
+Front->auth0:redirect (state, redirect uri=/api/content-uri, scope, client id, response type)
+auth0->auth0:check credentials, ...
+auth0->Front:302 /front-callback-uri (tokens)
+Front->Front:set tokens
+Front->Api:/api/content-url
+Api->auth0:/validate-token
+auth0->Api: 200
+Api->Front: data

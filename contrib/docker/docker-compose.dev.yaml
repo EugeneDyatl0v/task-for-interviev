@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+
+  migrations:
+    build:
+      context: ../../xone_test_task
+      dockerfile: fastapi/Dockerfile
+    command:
+      - "contrib/docker/wait-for-it.sh"
+      - "${DATABSE_HOST:-main_db}:${DATABSE_PORT:-5432}"
+      - "--"
+      - "python"
+      - "-m"
+      - "alembic"
+      - "-c"
+      - "database/alembic/alembic.ini"
+      - "upgrade"
+      - "head"
+    environment:
+      - "DATABASE_URL=${DATABASE_URL}"
+    networks:
+      - shared_network
+
+  auth0_api:
+    build:
+      context: ../../xone_test_task
+      dockerfile: fastapi/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DB_ENGINE_OPTION_POOL_SIZE: ${DB_ENGINE_OPTION_POOL_SIZE}
+      DB_ENGINE_OPTION_MAX_OVERFLOW: ${DB_ENGINE_OPTION_MAX_OVERFLOW}
+      DB_ENGINE_OPTION_POOL_RECYCLE: ${DB_ENGINE_OPTION_POOL_RECYCLE}
+      DB_ENGINE_OPTION_POOL_PRE_PING: ${DB_ENGINE_OPTION_POOL_PRE_PING}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SERVER: ${SMTP_SERVER}
+      SMTP_START_TLS: ${SMTP_START_TLS}
+      SMTP_SSL_TLS: ${SMTP_SSL_TLS}
+      EVENT_DRIVEN_KAFKA_ADDRESS: ${EVENT_DRIVEN_KAFKA_ADDRESS}
+      EVENT_DRIVEN_KAFKA_TOPIC: ${EVENT_DRIVEN_KAFKA_TOPIC}
+      EVENT_DRIVEN_KAFKA_SEND_TIMEOUT: ${EVENT_DRIVEN_KAFKA_SEND_TIMEOUT}
+      FACEBOOK_CLIENT_ID: ${FACEBOOK_CLIENT_ID}
+      FACEBOOK_CLIENT_SECRET: ${FACEBOOK_CLIENT_SECRET}
+      FACEBOOK_AUTHORIZATION_URL: ${FACEBOOK_AUTHORIZATION_URL}
+      FACEBOOK_TOKEN_URL: ${FACEBOOK_TOKEN_URL}
+      FACEBOOK_VALIDATE_URL: ${FACEBOOK_VALIDATE_URL}
+      FACEBOOK_REDIRECT_URI: ${FACEBOOK_REDIRECT_URI}
+      FACEBOOK_SCOPE: ${FACEBOOK_SCOPE}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_AUTHORIZATION_URL: ${GOOGLE_AUTHORIZATION_URL}
+      GOOGLE_TOKEN_URL: ${GOOGLE_TOKEN_URL}
+      GOOGLE_VALIDATE_URL: ${GOOGLE_VALIDATE_URL}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      GOOGLE_SCOPE: ${GOOGLE_SCOPE}
+      APM_SERVER_URL: ${APM_SERVER_URL}
+      APM_SERVICE_NAME: ${APM_SERVICE_NAME:-auth0_api}
+      APM_ENVIRONMENT: ${APM_ENVIRONMENT:-dev}
+      APM_ENABLE: ${APM_ENABLE}
+      APP_SEND_CONFIRMATION_VIA_UNISENDER: ${APP_SEND_CONFIRMATION_VIA_UNISENDER}
+      UNISENDER_REGISTER_CODE_TEMPLATE_ID: ${UNISENDER_REGISTER_CODE_TEMPLATE_ID}
+      UNISENDER_PASSWORD_RESET_TEMPLATE_ID: ${UNISENDER_PASSWORD_RESET_TEMPLATE_ID}
+      EXTERNAL_SERVICE_KAFKA_TOPIC: ${EXTERNAL_SERVICE_KAFKA_TOPIC}
+      EXTERNAL_SERVICE_KAFKA_ADDRESS: ${EXTERNAL_SERVICE_KAFKA_ADDRESS:-kafka:9092}
+    command: ["uvicorn", "src.api:app", "--host", "auth0_api", "--port", "8000", "--loop", "uvloop", "--http", "httptools"]
+    ports:
+      - 8001:8000
+    depends_on:
+      - migrations
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external: true

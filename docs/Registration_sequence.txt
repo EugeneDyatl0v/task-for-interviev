@@ -1,0 +1,114 @@
+title Registration
+participant Front
+participant auth0
+database Database
+participant SMTPServer
+==Registration==
+
+Front->>auth0: GET /registration/ \n(email or phone, password, repeat_password)
+
+alt if user already exists
+auth0-->>Front: Response(400)
+
+else 
+auth0->>Database: Add user
+Database-->>auth0: Success
+auth0->>Database: Add confirmation code
+Database-->>auth0: Success
+auth0->>SMTPServer: Send confirmation code
+
+alt if sending is successful
+SMTPServer-->>auth0: Success
+auth0->>Database: Commit changes
+Database-->>auth0: Success
+auth0-->>Front: Response(200)
+
+else 
+SMTPServer-->>auth0: Sending failed
+auth0->>Database: Rollback changes
+Database-->>auth0: Success
+auth0-->>Front: Response(400)
+
+end
+
+end
+
+==Registration confiramation==
+
+Front->>auth0: PATCH /registration/{confirmation_code}
+auth0->>Database: Get ConfirmationCodeModel by code
+Database-->>auth0: Return ConfirmationCodeModel
+
+alt if ConfirmationCodeModel is None
+auth0-->>Front: Response(400)
+
+else 
+auth0->>Database: Get UserModel by user_id \nfrom ConfirmationCodeModel
+Database-->>auth0: Success
+
+alt if user.phone not None and user.phone_verified = False
+
+alt if confirmation code expired or used
+auth0-->>Front: Response(400)
+
+else 
+auth0->>Database: Set user.phone_verified=True, \nconfirmation_code.used=True. \nCommit changes
+Database-->>auth0: Success
+auth0-->>Front: Response(200)
+
+end
+
+else elif user.email not None and user.email_verified = False
+
+alt if confirmation code expired or used
+auth0-->>Front: Response(400)
+
+else 
+auth0->>Database: Set user.email_verified=True, \nconfirmation_code.used=True. \nCommit changes
+Database-->>auth0: Success
+auth0-->>Front: Response(200)
+
+end
+
+else
+auth0-->>Front: Response(400)
+
+end
+
+end
+
+==Resend confirmation code==
+
+Front->>auth0: POST /registration/resend_code(email or phone)
+auth0->>Database: Get user by phone or email
+Database-->>auth0: Success
+
+alt if user is None
+
+auth0-->>Front: Response(400)
+
+else 
+
+auth0->>Database: Get last confirmation code by user id
+Database-->>auth0: Success
+auth0->>Database: Set last_confirmation_code.used=True
+Database-->>auth0: Success
+auth0->>auth0: Generate code
+auth0->>Database: Add confirmation code
+Database-->>auth0: Success
+auth0->>Database: Commit changes
+Database-->>auth0: Success
+
+auth0->>SMTPServer: Send confirmation code
+
+alt if sending is successful
+SMTPServer-->>auth0: Success
+auth0-->>Front: Response(200)
+
+else 
+SMTPServer-->>auth0: Sending failed
+auth0-->>Front: Response(400)
+
+end
+
+end

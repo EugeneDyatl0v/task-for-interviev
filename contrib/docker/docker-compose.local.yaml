@@ -1,0 +1,94 @@
+version: "3"
+
+services:
+  auth_flake8:
+    build:
+      context: ../..
+      dockerfile: contrib/docker/flake8/Dockerfile
+
+
+  auth_postgres:
+    build:
+      context: ../..
+      dockerfile: contrib/docker/postgres/Dockerfile
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql.conf"
+      - "-p"
+      - "5433"
+    ports:
+      - "5433:5433"
+    volumes:
+      - auth_pg_data:/var/lib/postgresql/data
+      - ./postgres/postgresql.conf:/etc/postgresql.conf
+
+
+  auth_migrations:
+    depends_on:
+      - "auth_postgres"
+    build:
+      context: ../..
+      dockerfile: contrib/docker/fastapi/Dockerfile
+    command:
+      - "contrib/docker/wait-for-it.sh"
+      - "auth_postgres:5433"
+      - "--"
+      - "python"
+      - "-m"
+      - "alembic"
+      - "-c"
+      - "database/alembic/alembic.ini"
+      - "upgrade"
+      - "head"
+    environment:
+      - "DATABASE_URL=${DATABASE_URL}"
+    volumes:
+      - ../../:/app
+
+
+  auth_nginx:
+    build:
+      context: ../..
+      dockerfile: contrib/docker/nginx/Dockerfile
+    depends_on:
+      - "auth_api"
+    ports:
+      - "8002:8002"
+
+
+  auth_api:
+    depends_on:
+      - "auth_migrations"
+    build:
+      context: ../..
+      dockerfile: contrib/docker/fastapi/Dockerfile
+    command:
+      - "uvicorn"
+      - "src.api:app"
+      - "--host"
+      - "auth_api"
+      - "--port"
+      - "8005"
+      - "--reload"
+    environment:
+      - "DATABASE_URL=${DATABASE_URL}"
+      - "UNISENDER_API_KEY=${UNISENDER_API_KEY}"
+      - "UNISENDER_SENDER_NAME=${UNISENDER_SENDER_NAME}"
+      - "UNISENDER_SENDER_EMAIL=${UNISENDER_SENDER_EMAIL}"
+      - "UNISENDER_DEFAULT_LIST_ID=${UNISENDER_DEFAULT_LIST_ID}"
+      - "UNISENDER_REGISTER_CODE_TEMPLATE_ID=${UNISENDER_REGISTER_CODE_TEMPLATE_ID}"
+      - "UNISENDER_PASSWORD_RESET_TEMPLATE_ID=${UNISENDER_PASSWORD_RESET_TEMPLATE_ID}"
+      - "UNISENDER_SENDING_TIMEOUT=${UNISENDER_SENDING_TIMEOUT}"
+      - "APP_JWT_SECRET=${APP_JWT_SECRET}"
+    volumes:
+      - ../../:/app
+
+
+volumes:
+  auth_pg_data:

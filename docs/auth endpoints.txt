@@ -1,0 +1,13 @@
+title Auth
+participant Front
+participant auth0
+Front->auth0: GET /phone-code (phone number
+auth0->auth0: generate auth code, \nput it in database
+auth0->Front: auth code
+Front->auth0: /login (login, password)
+Front->auth0: GET /session-list (pagination params, auth token)
+auth0->auth0: check auth token
+auth0->Front: active sessions list
+Front->auth0: /refresh (refresh token)
+auth0->auth0: check refresh token
+auth0->Front: new pair of tokens
