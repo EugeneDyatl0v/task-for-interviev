@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.api.schemas.password_recovery import ResetCodeSchemaOut
+from src.api.schemes.password_recovery import ResetCodeSchemeOut
 
 from database.models import ConfirmationCodeModel
 
@@ -9,19 +9,19 @@ from modules.auth.helpers import get_password_hash
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def create_reset_code_schema(
+async def create_reset_code_scheme(
         confirmation_code_model: ConfirmationCodeModel,
         db_session: AsyncSession = None
-) -> ResetCodeSchemaOut:
+) -> ResetCodeSchemeOut:
     """
-    Creating schema.
+    Creating scheme.
 
     Args:
         confirmation_code_model: ConfirmationCodeModel
         db_session: AsyncSession
     """
     await db_session.refresh(confirmation_code_model)
-    return ResetCodeSchemaOut(
+    return ResetCodeSchemeOut(
         expired_at=confirmation_code_model.expired_at
     )
 

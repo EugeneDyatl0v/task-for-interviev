@@ -1,7 +1,7 @@
 import datetime
 
-from src.api.schemas.password_recovery import (
-    EmailRecoverySchema
+from src.api.schemes.password_recovery import (
+    EmailRecoveryScheme
 )
 
 from database.models import ConfirmationCodeModel, UserModel
@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class EmailPasswordRecovery(AbstractPasswordRecovery, SendEmailMixin):
     async def _get_user(
             self,
-            credentials: EmailRecoverySchema,
+            credentials: EmailRecoveryScheme,
             db_session: AsyncSession
     ) -> UserModel | None:
         return await UserService.get_by_email(
@@ -51,7 +51,7 @@ class EmailPasswordRecovery(AbstractPasswordRecovery, SendEmailMixin):
 
     async def _send_confirmation_code(
             self,
-            credentials: EmailRecoverySchema,
+            credentials: EmailRecoveryScheme,
             confirmation_code: str
     ) -> None:
         await SendEmailMixin.send_email_to_user_via_unisender(

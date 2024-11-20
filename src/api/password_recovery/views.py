@@ -2,15 +2,15 @@ import datetime
 import http
 
 from src.api.helpers.password_recovery import (
-    create_reset_code_schema,
+    create_reset_code_scheme,
     process_password_recovery
 )
-from src.api.schemas.password_recovery import (
+from src.api.schemes.password_recovery import (
     ConfirmationCodeResponseScheme,
-    EmailRecoverySchema,
-    PasswordSchema,
+    EmailRecoveryScheme,
+    PasswordScheme,
 )
-from src.api.schemes import ExceptionScheme, Response200Scheme
+from src.api.schemes.response import ExceptionScheme, Response200Scheme
 
 from database import get_session
 
@@ -33,28 +33,26 @@ password_recovery_router = APIRouter(
 @password_recovery_router.post(
     '/request',
     responses={
-            400: {
-                'model': ExceptionScheme,
-                'description': 'User with this credentials not exists.'
-            },
-            200: {
-                'model': ConfirmationCodeResponseScheme,
-                'description': 'Send message for password recovery.'
-            }
+        200: {
+            'model': ConfirmationCodeResponseScheme,
+            'description': 'Send message for password recovery.'
+        },
+        400: {
+            'model': ExceptionScheme,
+            'description': 'User with this credentials not exists.'
+        },
+        500: {
+            'model': ExceptionScheme,
+            'description': 'Internal server error'
         }
+    },
+    summary='Request password recovery via email.'
 )
 async def password_recovery_request(
-        credentials: EmailRecoverySchema,
+        credentials: EmailRecoveryScheme,
         db_session: AsyncSession = Depends(get_session)
 ):
-    """
-    Password recovery request via email or phone.
-    Args:
-        credentials: EmailRecoverySchema | PhoneRecoverySchema, user data.
-        db_session: AsyncSession, database session.
-    """
-
-    if isinstance(credentials, EmailRecoverySchema):
+    if isinstance(credentials, EmailRecoveryScheme):
         confirm_code_model = await EmailPasswordRecovery(
         ).password_recovery_request(
             credentials,
@@ -66,60 +64,58 @@ async def password_recovery_request(
             detail='Invalid credentials'
         )
 
-    response_schema = await create_reset_code_schema(
+    response_scheme = await create_reset_code_scheme(
         confirm_code_model,
         db_session
     )
 
     return ConfirmationCodeResponseScheme(
         message='Message sent.',
-        result=response_schema
+        result=response_scheme
     )
 
 
 @password_recovery_router.patch(
     '/{confirmation_code}',
     responses={
-            400: {
-                'model': ExceptionScheme,
-                'description': 'Problem with confirmation code.'
-            },
-            200: {
-                'model': Response200Scheme,
-                'description': 'User password updated.'
-            }
+        200: {
+            'model': Response200Scheme,
+            'description': 'User password updated.'
+        },
+        400: {
+            'model': ExceptionScheme,
+            'description': 'Problem with confirmation code.'
+        },
+        500: {
+            'model': ExceptionScheme,
+            'description': 'Internal server error'
         }
+    },
+    summary='Update password via confirmation code.'
 )
 async def password_recovery(
         confirmation_code: str,
-        request: PasswordSchema,
+        request: PasswordScheme,
         db_session: AsyncSession = Depends(get_session)
 ):
-    """
-    Password update via confirmation code.
-    Args:
-        confirmation_code: str, code from message.
-        request: PasswordSchema, two passwords.
-        db_session: AsyncSession, database session.
-    """
     confirm = await ConfirmationCodeService.get_confirmation_code_by_code(
         confirmation_code,
         db_session
     )
     if not confirm:
         raise HTTPException(
-            status_code=400,
+            status_code=http.HTTPStatus.BAD_REQUEST,
             detail='Reset code not found'
         )
 
     if confirm.expired_at < datetime.datetime.utcnow():
         raise HTTPException(
-            status_code=400,
+            status_code=http.HTTPStatus.BAD_REQUEST,
             detail='Reset code code expired'
         )
     if confirm.used:
         raise HTTPException(
-            status_code=400,
+            status_code=http.HTTPStatus.BAD_REQUEST,
             detail='This reset code already used'
         )
     await process_password_recovery(confirm, request.password, db_session)

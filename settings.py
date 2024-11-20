@@ -27,20 +27,9 @@ class Database:
 class AppConfig:
     secret_key = os.environ.get('APP_SECRET_KEY', default='secret')
     debug = os.environ.get('APP_DEBUG', default='false')
-    reset_code_expiration_days = os.environ.get(
-        'APP_RESET_CODE_EXPIRATION_DAYS', default=1
-    )
-    min_length_password = os.environ.get(
-        'APP_MIN_LENGTH_PASSWORD', default=6
-    )
-    host = os.environ.get(
-        'APP_HOST', default='https://auto0.hiddenteam.ru')
-    base_dir = os.path.dirname(os.path.abspath(__file__))
     send_confirmation_via_unisender: bool = os.environ.get(
         'APP_SEND_CONFIRMATION_VIA_UNISENDER', default='false'
     )
-    jwt_secret = os.environ.get('APP_JWT_SECRET', default='secret')
-    jwt_algorithm = 'HS256'
 
 
 @dataclasses.dataclass
@@ -55,7 +44,7 @@ class JWTConfig:
     auth_token_time_expiration_minutes = 60
     refresh_token_time_expiration_minutes = 60 * 24 * 7
     user_property = 'user_info'
-    scope_admin = 'admin'
+    scope_user = 'user'
 
 
 @dataclasses.dataclass

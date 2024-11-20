@@ -1,6 +1,6 @@
 import traceback
 
-from src.api.schemes import (
+from src.api.schemes.response import (
     Response400Scheme,
     Response401Scheme,
     Response403Scheme,
@@ -65,7 +65,7 @@ async def sc_response_exception_handler(
     request: Request,
     exc: StarletteHTTPException
 ):
-    schemas_status_code_dict = {
+    schemes_status_code_dict = {
         status.HTTP_400_BAD_REQUEST: Response400Scheme,
         status.HTTP_401_UNAUTHORIZED: Response401Scheme,
         status.HTTP_403_FORBIDDEN: Response403Scheme,
@@ -75,11 +75,11 @@ async def sc_response_exception_handler(
     }
 
     status_code = exc.status_code
-    schema = schemas_status_code_dict.get(
+    scheme = schemes_status_code_dict.get(
         status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
     )
 
     return JSONResponse(
         status_code=status_code,
-        content=schema(message=exc.detail).model_dump()
+        content=scheme(message=exc.detail).model_dump()
     )

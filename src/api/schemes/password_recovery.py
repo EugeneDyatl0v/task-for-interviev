@@ -1,17 +1,17 @@
 import datetime
 import re
 
-from src.api.schemes import Response200Scheme
+from src.api.schemes.response import Response200Scheme
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class PasswordSchema(BaseModel):
+class PasswordScheme(BaseModel):
     password: str
     repeat_password: str
 
     @model_validator(mode='after')
-    def check_passwords_match(self) -> 'PasswordSchema':
+    def check_passwords_match(self) -> 'PasswordScheme':
         pw1 = self.password
         pw2 = self.repeat_password
         if pw1 is not None and pw2 is not None and pw1 != pw2:
@@ -19,11 +19,11 @@ class PasswordSchema(BaseModel):
         return self
 
 
-class EmailRecoverySchema(BaseModel):
+class EmailRecoveryScheme(BaseModel):
     email: str = Field(examples=['evgenii.dyatlov06@gmail.com'])
 
     @model_validator(mode='after')
-    def check_email(self) -> 'EmailRecoverySchema':
+    def check_email(self) -> 'EmailRecoveryScheme':
         email = self.email
         if not bool(re.match(
                 r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
@@ -33,9 +33,9 @@ class EmailRecoverySchema(BaseModel):
         return self
 
 
-class ResetCodeSchemaOut(BaseModel):
+class ResetCodeSchemeOut(BaseModel):
     expired_at: datetime.datetime = Field()
 
 
 class ConfirmationCodeResponseScheme(Response200Scheme):
-    result: ResetCodeSchemaOut
+    result: ResetCodeSchemeOut

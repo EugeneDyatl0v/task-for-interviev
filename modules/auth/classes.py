@@ -19,7 +19,7 @@ from modules.auth.abstract import (
     AbstractAuthHandler,
     AuthAbstract,
 )
-from modules.auth.jwt import JWTAdmin
+from modules.auth.jwt import JWTUser
 
 from modules.auth.schemes import EmailLoginScheme, UserJwtPayload, UserInfo
 from modules.auth.validators import validate_user
@@ -30,13 +30,13 @@ from services.user import UserService
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from settings import AppConfig
+from settings import JWTConfig
 
 load_dotenv()
 
 
-class AuthAdmin(AuthAbstract):
-    JWT = JWTAdmin
+class AuthUser(AuthAbstract):
+    JWT = JWTUser
     session_model = SessionModel
     session_service = SessionService
 
@@ -146,8 +146,8 @@ class JWTBearer(HTTPBearer):
         try:
             jwt.decode(
                 token=token,
-                key=AppConfig.jwt_secret,
-                algorithms=[AppConfig.jwt_algorithm]
+                key=JWTConfig.secret_key,
+                algorithms=[JWTConfig.algorithm]
             )
         except JWTError as e:
             logger.exception(f'Token verification error: {e}')

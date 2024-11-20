@@ -7,10 +7,14 @@ from database import get_session
 from modules.auth.classes import JWTBearer
 from modules.auth.schemes import UserInfo
 from services.collection import CollectionManager
-from src.api.collection.shemes import CollectionResponseSchema, \
-    CollectionOutSchema, CollectionDataScheme, LinkListResponseSchema
-from src.api.link.schemes import LinkOutSchema
-from src.api.schemes import jwt_bearer_responses, ExceptionScheme, \
+from src.api.collection.shemes import (
+    CollectionResponseScheme,
+    CollectionOutScheme,
+    CollectionDataScheme,
+    LinkListResponseScheme
+)
+from src.api.link.schemes import LinkOutScheme
+from src.api.schemes.response import jwt_bearer_responses, ExceptionScheme, \
     Response200Scheme
 
 
@@ -24,7 +28,7 @@ router = APIRouter(
     '/',
     responses={
         200: {
-            'model': CollectionResponseSchema,
+            'model': CollectionResponseScheme,
             'description': 'Retrieves collection',
         },
         **jwt_bearer_responses,
@@ -37,21 +41,21 @@ router = APIRouter(
             'description': 'Internal server error'
         }
     },
-    summary='Retrieves collection'
+    summary='Retrieves a collection by its ID.'
 )
 async def get_collection(
         collection_id: UUID = Query(...),
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> CollectionResponseSchema:
+) -> CollectionResponseScheme:
     collection = await CollectionManager().get(
         collection_id=collection_id,
         user_id=user_info.user_id,
         db_session=db_session
     )
 
-    return CollectionResponseSchema(
-        data=CollectionOutSchema(
+    return CollectionResponseScheme(
+        data=CollectionOutScheme(
             id=collection.id,
             title=collection.title,
             description=collection.description
@@ -63,7 +67,7 @@ async def get_collection(
     '/',
     responses={
         200: {
-            'model': CollectionResponseSchema,
+            'model': CollectionResponseScheme,
             'description': 'Collection successfully created',
         },
         **jwt_bearer_responses,
@@ -76,20 +80,20 @@ async def get_collection(
             'description': 'Internal server error'
         }
     },
-    summary='Collection creation'
+    summary='Creates a new collection.'
 )
 async def create_collection(
         collection_data: CollectionDataScheme,
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> CollectionResponseSchema:
+) -> CollectionResponseScheme:
     collection = await CollectionManager().create(
         collection_data=collection_data,
         user_id=user_info.user_id,
         db_session=db_session
     )
-    return CollectionResponseSchema(
-        data=CollectionOutSchema(
+    return CollectionResponseScheme(
+        data=CollectionOutScheme(
             id=collection.id,
             title=collection.title,
             description=collection.description
@@ -101,7 +105,7 @@ async def create_collection(
     '/',
     responses={
         200: {
-            'model': CollectionResponseSchema,
+            'model': CollectionResponseScheme,
             'description': 'Collection successfully updated',
         },
         **jwt_bearer_responses,
@@ -114,14 +118,14 @@ async def create_collection(
             'description': 'Internal server error'
         }
     },
-    summary='Collection updating'
+    summary='Updates an existing collection.'
 )
 async def update_collection(
         collection_data: CollectionDataScheme,
         collection_id: UUID = Query(...),
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> CollectionResponseSchema:
+) -> CollectionResponseScheme:
     collection = await CollectionManager().update(
         collection_id=collection_id,
         collection_data=collection_data,
@@ -129,8 +133,8 @@ async def update_collection(
         db_session=db_session
     )
 
-    return CollectionResponseSchema(
-        data=CollectionOutSchema(
+    return CollectionResponseScheme(
+        data=CollectionOutScheme(
             id=collection.id,
             title=collection.title,
             description=collection.description
@@ -155,7 +159,7 @@ async def update_collection(
             'description': 'Internal server error'
         }
     },
-    summary='Collection deleting'
+    summary='Deletes a collection by its ID.'
 )
 async def delete_collection(
         collection_id: UUID = Query(...),
@@ -177,7 +181,7 @@ async def delete_collection(
     '/links/',
     responses={
         200: {
-            'model': LinkListResponseSchema,
+            'model': LinkListResponseScheme,
             'description': 'Retrieves links in collection',
         },
         **jwt_bearer_responses,
@@ -190,22 +194,22 @@ async def delete_collection(
             'description': 'Internal server error'
         }
     },
-    summary='Retrieves links in collection'
+    summary='Retrieves all links within a specified collection.'
 )
 async def get_links_in_collection(
         collection_id: UUID = Query(...),
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> LinkListResponseSchema:
+) -> LinkListResponseScheme:
     links = await CollectionManager().get_links(
         collection_id=collection_id,
         user_id=user_info.user_id,
         db_session=db_session
     )
 
-    return LinkListResponseSchema(
+    return LinkListResponseScheme(
         data=[
-            LinkOutSchema(
+            LinkOutScheme(
                 id=link.id,
                 page_title=link.page_title,
                 description=link.description,
@@ -233,7 +237,7 @@ async def get_links_in_collection(
             'description': 'Internal server error'
         }
     },
-    summary='Add link to collection'
+    summary='Adds a link to a specified collection.'
 )
 async def add_link_to_collection(
         link_id: UUID = Query(...),
@@ -272,7 +276,7 @@ async def add_link_to_collection(
             'description': 'Internal server error'
         }
     },
-    summary='Delete link from collection'
+    summary='Deletes a link from a specified collection.'
 )
 async def delete_link_to_collection(
         link_id: UUID = Query(...),

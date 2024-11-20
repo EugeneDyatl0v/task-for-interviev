@@ -1,13 +1,13 @@
 import datetime
-from typing import Union
+import http
 
 from src.api.helpers.registration import (
     email_confirmation
 )
-from src.api.schemas.registration import (
+from src.api.schemes.registration import (
     EmailConfirmationOutScheme, EmailRegisterScheme, EmailResendCodeScheme,
 )
-from src.api.schemes import ExceptionScheme, Response200Scheme
+from src.api.schemes.response import ExceptionScheme, Response200Scheme
 
 from database import get_session
 from database.models import ConfirmationCodeModel
@@ -35,38 +35,25 @@ registration_router = APIRouter(
 @registration_router.post(
     '/',
     responses={
+        200: {
+            'model': Response200Scheme,
+            'description': 'User registered.'
+        },
         400: {
             'model': ExceptionScheme,
             'description': 'User already registered.'
         },
-        200: {
-            'model': Response200Scheme,
-            'description': 'User registered.'
+        500: {
+            'model': ExceptionScheme,
+            'description': 'Internal server error'
         }
-    }
+    },
+    summary='Registers a new user using email.'
 )
 async def registration(
         request: EmailRegisterScheme,
         db_session: AsyncSession = Depends(get_session)
-):
-    """Registers a new user using either email or phone, depending on the
-    provided data.
-
-    Args:
-        request (EmailRegisterScheme): The registration
-            data provided by the user. This can either be an email-based
-            registration scheme.
-        db_session (AsyncSession): The database session used to interact with
-            the database.
-
-    Returns:
-        Response200Scheme: A response object containing a success message.
-
-    Raises:
-        HTTPException: If the user is already registered, a 400 error is
-            returned with the relevant exception scheme.
-    """
-
+) -> Response200Scheme:
     if isinstance(request, EmailRegisterScheme):
         user = await EmailRegistration().register(
             request,
@@ -88,28 +75,25 @@ async def registration(
 @registration_router.patch(
     '/{confirmation_code}',
     responses={
-            400: {
-                'model': ExceptionScheme,
-                'description': 'Problem with confirmation code.'
-            },
-            200: {
-                'model': EmailConfirmationOutScheme,
-                'description': 'Email/ confirmed.'
-            }
+        200: {
+            'model': EmailConfirmationOutScheme,
+            'description': 'Email/ confirmed.'
+        },
+        400: {
+            'model': ExceptionScheme,
+            'description': 'Problem with confirmation code.'
+        },
+        500: {
+            'model': ExceptionScheme,
+            'description': 'Internal server error'
         }
+    },
+    summary='Confirms the user\'s email using a confirmation code.'
 )
 async def confirmation(
         confirmation_code: str,
         db_session: AsyncSession = Depends(get_session)
 ) -> EmailConfirmationOutScheme:
-    """
-    Determine if the confirmation is for email and call
-    the appropriate method.
-
-    Args:
-        confirmation_code: str, confirmation code from email.
-        db_session: AsyncSession, database session.
-    """
     confirm = await ConfirmationCodeService.get_confirmation_code_by_code(
         confirmation_code,
         db_session
@@ -117,7 +101,7 @@ async def confirmation(
 
     if not confirm:
         raise HTTPException(
-            status_code=400,
+            status_code=http.HTTPStatus.BAD_REQUEST,
             detail='Confirmation code not found'
         )
 
@@ -133,7 +117,7 @@ async def confirmation(
         )
     else:
         raise HTTPException(
-            status_code=400,
+            status_code=http.HTTPStatus.BAD_REQUEST,
             detail='No valid field to verify or already verified'
         )
 
@@ -141,47 +125,30 @@ async def confirmation(
 @registration_router.post(
     '/resend_code',
     responses={
+        200: {
+            'model': Response200Scheme,
+            'description': 'New confirmation code successfully sent.'
+        },
         400: {
             'model': ExceptionScheme,
             'description': 'Problem with sending confirmation code.'
         },
-        200: {
-            'model':
-                Response200Scheme,
-            'description': 'New confirmation code successfully sent.'
+        500: {
+            'model': ExceptionScheme,
+            'description': 'Internal server error'
         }
-    }
+    },
+    summary='Resends a confirmation code to the user via email.'
 )
 async def resend_code(
     request: EmailResendCodeScheme,
     db_session: AsyncSession = Depends(get_session)
-):
-    """Resend a confirmation code to the user via email or phone.
-
-    This endpoint handles the resending of confirmation codes based on the
-    user's email or phone number.
-    If a valid user is found, it marks the old confirmation code as used and
-    generates a new one.
-    The new code is then sent to the user.
-
-    Args:
-        request (EmailResendCodeScheme): A request
-        object containing either email.
-        db_session (AsyncSession): The database session dependency.
-
-    Raises:
-        HTTPException: If the user does not exist or if there is an issue
-        sending the email.
-
-    Returns:
-        Response200Scheme: A response indicating the success of the operation.
-    """
-
+) -> Response200Scheme:
     user = await UserService.get_by_email(request.email, db_session)
 
     if not user:
         raise HTTPException(
-            400,
+            status_code=http.HTTPStatus.BAD_REQUEST,
             detail='User does not exists.'
         )
 
@@ -200,11 +167,12 @@ async def resend_code(
         code=code,
         user_id=user.id,
         expired_at=datetime.datetime.utcnow() + datetime.timedelta(
-            minutes=60)
+            minutes=60
+        )
     )
     db_session.add(confirm_code)
 
-    template_data = {'code': code}
+    template_data = {'verification_link': code}
     await SendEmailMixin.send_email_to_user_via_unisender(
         message_subject=TemplatesConfig.subject_verification,
         template_data=template_data,

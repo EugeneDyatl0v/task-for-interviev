@@ -1,10 +1,10 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 from database.models import LinkType
-from src.api.schemes import DataResponseSchema
+from src.api.schemes.response import DataResponseScheme
 
 
 class PageDataScheme(BaseModel):
@@ -14,7 +14,7 @@ class PageDataScheme(BaseModel):
     link_type: LinkType
 
 
-class LinkOutSchema(BaseModel):
+class LinkOutScheme(BaseModel):
     id: UUID
     page_title: str
     description: Optional[str]
@@ -22,5 +22,5 @@ class LinkOutSchema(BaseModel):
     link_type: LinkType
 
 
-class LinkResponseSchema(DataResponseSchema):
-    data: LinkOutSchema
+class LinkResponseScheme(DataResponseScheme):
+    data: LinkOutScheme

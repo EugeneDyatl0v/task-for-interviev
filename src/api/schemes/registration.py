@@ -1,6 +1,6 @@
 import re
 
-from src.api.schemes import Response200Scheme
+from src.api.schemes.response import Response200Scheme
 
 from pydantic import BaseModel, Field, model_validator
 

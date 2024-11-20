@@ -63,7 +63,7 @@ class CreateUserScheme(UserWithMixins):
     )
 
     class Config:
-        json_schema_extra = {
+        json_scheme_extra = {
             'example': {
                 'phone': '78888888888',
                 'email': 'ilya@google.com',
@@ -81,7 +81,7 @@ class EditUserScheme(BasicUser):
     pass
 
 
-class ClientEditUserSchema(BaseModel):
+class ClientEditUserScheme(BaseModel):
     pass
 
 

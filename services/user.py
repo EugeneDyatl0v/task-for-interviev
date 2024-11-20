@@ -5,8 +5,8 @@ from uuid import UUID
 
 from modules.auth.helpers import get_password_hash
 from modules.auth.validators import verify_password
-from src.api.schemas.users import (
-    ClientEditUserSchema,
+from src.api.schemes.users import (
+    ClientEditUserScheme,
     EditUserScheme,
     UserFilterScheme,
 )
@@ -52,7 +52,7 @@ class UserService:
     @staticmethod
     async def update(
             user: UserModel,
-            updated_user_data: EditUserScheme | ClientEditUserSchema,
+            updated_user_data: EditUserScheme | ClientEditUserScheme,
             db_session: CustomAsyncSession
     ) -> UserModel:
         updated_data = updated_user_data.dict(exclude_unset=True)
@@ -228,3 +228,9 @@ class UserService:
         db_user.password_hash = await get_password_hash(new_password)
 
         await db_session.commit()
+
+        await SessionService.close_sessions(
+            user_id=user_id,
+            db_session=db_session
+        )
+

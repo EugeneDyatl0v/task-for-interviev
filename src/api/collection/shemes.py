@@ -3,8 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from src.api.link.schemes import LinkOutSchema
-from src.api.schemes import DataResponseSchema
+from src.api.link.schemes import LinkOutScheme
+from src.api.schemes.response import DataResponseScheme
 
 
 class CollectionDataScheme(BaseModel):
@@ -12,15 +12,15 @@ class CollectionDataScheme(BaseModel):
     description: Optional[str]
 
 
-class CollectionOutSchema(BaseModel):
+class CollectionOutScheme(BaseModel):
     id: UUID
     title: str
     description: Optional[str]
 
 
-class CollectionResponseSchema(DataResponseSchema):
-    data: CollectionOutSchema
+class CollectionResponseScheme(DataResponseScheme):
+    data: CollectionOutScheme
 
 
-class LinkListResponseSchema(DataResponseSchema):
-    data: List[LinkOutSchema]
+class LinkListResponseScheme(DataResponseScheme):
+    data: List[LinkOutScheme]

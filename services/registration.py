@@ -2,7 +2,7 @@ import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.schemas.registration import (
+from src.api.schemes.registration import (
     EmailRegisterScheme
 )
 from database.models import ConfirmationCodeModel, UserModel

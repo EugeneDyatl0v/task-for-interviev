@@ -7,10 +7,16 @@ from database import get_session
 from modules.auth.classes import JWTBearer
 from modules.auth.schemes import UserInfo
 from services.link import LinkManager
-from src.api.link.schemes import LinkResponseSchema, LinkOutSchema, \
+from src.api.link.schemes import (
+    LinkResponseScheme,
+    LinkOutScheme,
     PageDataScheme
-from src.api.schemes import jwt_bearer_responses, ExceptionScheme, \
-    Response200Scheme
+)
+from src.api.schemes.response import (
+    ExceptionScheme,
+    Response200Scheme,
+    jwt_bearer_responses
+)
 
 router = APIRouter(
     prefix='/link',
@@ -22,7 +28,7 @@ router = APIRouter(
     '/',
     responses={
         200: {
-            'model': LinkResponseSchema,
+            'model': LinkResponseScheme,
             'description': 'Retrieves link',
         },
         **jwt_bearer_responses,
@@ -35,21 +41,21 @@ router = APIRouter(
             'description': 'Internal server error'
         }
     },
-    summary='Retrieves link'
+    summary='Retrieves a link by its ID.'
 )
 async def get_link(
         link_id: UUID = Query(...),
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> LinkResponseSchema:
+) -> LinkResponseScheme:
     link = await LinkManager().get(
         link_id=link_id,
         user_id=user_info.user_id,
         db_session=db_session
     )
 
-    return LinkResponseSchema(
-        data=LinkOutSchema(
+    return LinkResponseScheme(
+        data=LinkOutScheme(
             id=link.id,
             page_title=link.page_title,
             description=link.description,
@@ -63,7 +69,7 @@ async def get_link(
     '/',
     responses={
         200: {
-            'model': LinkResponseSchema,
+            'model': LinkResponseScheme,
             'description': 'Link successfully created',
         },
         **jwt_bearer_responses,
@@ -76,20 +82,20 @@ async def get_link(
             'description': 'Internal server error'
         }
     },
-    summary='Link creation'
+    summary='Creates a new link.'
 )
 async def create_link(
         link: str = Query(...),
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> LinkResponseSchema:
+) -> LinkResponseScheme:
     link = await LinkManager().create(
         link=link,
         user_id=user_info.user_id,
         db_session=db_session
     )
-    return LinkResponseSchema(
-        data=LinkOutSchema(
+    return LinkResponseScheme(
+        data=LinkOutScheme(
             id=link.id,
             page_title=link.page_title,
             description=link.description,
@@ -103,7 +109,7 @@ async def create_link(
     '/',
     responses={
         200: {
-            'model': LinkResponseSchema,
+            'model': LinkResponseScheme,
             'description': 'Link successfully updated',
         },
         **jwt_bearer_responses,
@@ -116,14 +122,14 @@ async def create_link(
             'description': 'Internal server error'
         }
     },
-    summary='Link updating'
+    summary='Updates an existing link.'
 )
 async def update_link(
         link_data: PageDataScheme,
         link_id: UUID = Query(...),
         db_session: AsyncSession = Depends(get_session),
         user_info: UserInfo = Depends(JWTBearer())
-) -> LinkResponseSchema:
+) -> LinkResponseScheme:
     link = await LinkManager().update(
         link_id=link_id,
         link_data=link_data,
@@ -131,8 +137,8 @@ async def update_link(
         db_session=db_session
     )
 
-    return LinkResponseSchema(
-        data=LinkOutSchema(
+    return LinkResponseScheme(
+        data=LinkOutScheme(
             id=link.id,
             page_title=link.page_title,
             description=link.description,
@@ -159,7 +165,7 @@ async def update_link(
             'description': 'Internal server error'
         }
     },
-    summary='Link deleting'
+    summary='Deletes a link by its ID.'
 )
 async def delete_link(
         link_id: UUID = Query(...),

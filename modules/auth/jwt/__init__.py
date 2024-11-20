@@ -8,7 +8,7 @@ from modules.auth.jwt.classes import (
 from settings import JWTConfig
 
 
-JWT_PAYLOAD_ADMIN = {
+JWT_PAYLOAD_USER = {
     "session_id": JWTArgsConstField("id", "id"),
     "user_id": JWTModelConstField(
         UserModel, "user_id", "id", "id"
@@ -18,10 +18,8 @@ JWT_PAYLOAD_ADMIN = {
     )
 }
 
-JWT_PAYLOAD_CLIENT = {**JWT_PAYLOAD_ADMIN}
 
-
-class JWTAdmin(JWT):
-    scope: str = JWTConfig.scope_admin
-    jwt_payload_structure: dict = JWT_PAYLOAD_ADMIN
+class JWTUser(JWT):
+    scope: str = JWTConfig.scope_user
+    jwt_payload_structure: dict = JWT_PAYLOAD_USER
     SessionModel = SessionModel

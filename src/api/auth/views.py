@@ -1,15 +1,15 @@
 from typing import Union
 
-from modules.auth.classes import AuthAdmin, JWTBearer
+from modules.auth.classes import AuthUser, JWTBearer
 from services.user import UserService
 from src.api.auth.schemes import ChangePasswordScheme
 from src.api.helpers.auth import get_login_handler
-from src.api.schemas.auth import LoginResponse
-from src.api.schemes import (
+from src.api.schemes.auth import JWTScheme, LoginResponse
+from src.api.schemes.response import (
     ExceptionScheme,
-    JWTScheme,
     Response200Scheme,
-    jwt_bearer_responses
+    jwt_bearer_responses,
+    Response400Scheme, Response403Scheme
 )
 
 from database import get_session
@@ -42,7 +42,14 @@ router = APIRouter(
             'model': LoginResponse | Response200Scheme,
             'description': 'Returns tokens or redirect URI with tokens'
         },
-        **jwt_bearer_responses,
+        400: {
+            'model': Response400Scheme,
+            'description': 'Wrong credentials'
+        },
+        403: {
+            'model': Response403Scheme,
+            'description': 'Account deleted'
+        },
         422: {
             'model': ExceptionScheme,
             'description': 'Invalid request scheme'
@@ -52,8 +59,7 @@ router = APIRouter(
             'description': 'Internal server error'
         }
     },
-    summary='Authenticates user',
-    response_model=None
+    summary='Authenticates a user and returns authentication tokens.'
 )
 async def login(
         login_info: EmailLoginScheme,
@@ -61,7 +67,7 @@ async def login(
         db_session: AsyncSession = Depends(get_session)
 ) -> Union[LoginResponse, Response200Scheme]:
     login_handler = get_login_handler(login_info)
-    result = await login_handler(auth_class=AuthAdmin).login(
+    result = await login_handler(auth_class=AuthUser).login(
         credentials=login_info,
         request=request,
         db_session=db_session
@@ -73,34 +79,6 @@ async def login(
         refresh_token=refresh_token,
         continue_uri=None
     )
-
-"""
-@router.post(
-    '/close-sessions/',
-    responses={
-        200: {
-            'model': Response200Scheme,
-            'description': 'Sessions were successfully closed'
-        },
-        **jwt_bearer_responses,
-        500: {
-            'model': ExceptionScheme,
-            'description': 'Internal server error'
-        }
-    },
-    summary='Closes all user\'s sessions'
-)
-async def close_sessions(
-        jwt_payload=Depends(JWTBearerAdmin()),
-        db_session: AsyncSession = Depends(get_session)
-) -> Response200Scheme:
-    user_id = jwt_payload[JWTConfig.user_property].get('user_id')
-    await SessionService.close_sessions(
-        user_id=user_id,
-        db_session=db_session
-    )
-    return Response200Scheme(message='All sessions were closed')
-"""
 
 
 @router.patch(
@@ -124,6 +102,7 @@ async def close_sessions(
             'description': 'Internal server error'
         },
     },
+    summary='Changes the user\'s password.'
 )
 async def change_password(
     request: ChangePasswordScheme,
@@ -163,13 +142,13 @@ async def change_password(
         },
 
     },
-    summary='Checks refresh token and returns new tokens'
+    summary='Validates the refresh token and returns a new pair of tokens.'
 )
 async def refresh_tokens(
         refresh_payload: dict[str, str] = Depends(validate_refresh_token),
         db_session: AsyncSession = Depends(get_session)
 ) -> JWTScheme:
-    auth_token, refresh_token = await AuthAdmin.update_tokens(
+    auth_token, refresh_token = await AuthUser.update_tokens(
         jwt_payload=refresh_payload,
         db_session=db_session
     )

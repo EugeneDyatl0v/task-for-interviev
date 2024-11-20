@@ -1,7 +1,7 @@
 import http
 from datetime import datetime
 
-from src.api.schemas.registration import (
+from src.api.schemes.registration import (
     EmailConfirmationScheme
 )
 
@@ -16,7 +16,7 @@ async def abstract_confirmation(
         confirmation_code: str,
         db_session: AsyncSession,
         user_attribute: str,
-        confirmation_schema_class
+        confirmation_scheme_class
 ):
     """
     Confirmation function.
@@ -25,7 +25,7 @@ async def abstract_confirmation(
         confirmation_code (str): confirmation code from email or phone.
         db_session (AsyncSession):, database session.
         user_attribute (str): user attribute to check (email or phone).
-        confirmation_schema_class: schema class to use for the response.
+        confirmation_scheme_class: scheme class to use for the response.
     """
     confirmation = await ConfirmationCodeService.get_confirmation_code_by_code(
         confirmation_code,
@@ -69,7 +69,7 @@ async def abstract_confirmation(
     db_session.add_all([user, confirmation])
     await db_session.flush()
 
-    response_schema = confirmation_schema_class(
+    response_scheme = confirmation_scheme_class(
         **{
             user_attribute: user_value,
             f'{user_attribute}_verified': getattr(
@@ -80,7 +80,7 @@ async def abstract_confirmation(
 
     await db_session.commit()
 
-    return response_schema
+    return response_scheme
 
 
 async def email_confirmation(
@@ -91,5 +91,5 @@ async def email_confirmation(
         confirmation_code=confirmation_code,
         db_session=db_session,
         user_attribute='email',
-        confirmation_schema_class=EmailConfirmationScheme
+        confirmation_scheme_class=EmailConfirmationScheme
     )
