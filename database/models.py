@@ -14,7 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
     UUID,
-    LargeBinary, UniqueConstraint,
+    UniqueConstraint
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -203,7 +203,10 @@ class LinkModel(TimestampMixin, Base):
     __tablename__ = f'{Database.prefix}links'
     __table_args__ = (
         UniqueConstraint("user_id", "link", name="uq_user_link"),
-        {'extend_existing': True, 'comment': 'Represents a user link in the system'}
+        {
+            'extend_existing': True,
+            'comment': 'Represents a user link in the system'
+        }
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -253,7 +256,10 @@ class LinkModel(TimestampMixin, Base):
 class CollectionModel(TimestampMixin, Base):
     __tablename__ = f'{Database.prefix}collections'
     __table_args__ = (
-        {'extend_existing': True, 'comment': 'Represents a user collection in the system'}
+        {
+            'extend_existing': True,
+            'comment': 'Represents a user collection in the system'
+        }
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

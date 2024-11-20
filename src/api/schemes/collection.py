@@ -1,9 +1,9 @@
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from src.api.link.schemes import LinkOutScheme
+from src.api.schemes.link import LinkOutScheme
 from src.api.schemes.response import DataResponseScheme
 
 

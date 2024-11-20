@@ -1,10 +1,5 @@
 import http
 
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
-from pydantic import ValidationError
-from sqlalchemy import select, and_
-
 from database import get_session
 from database.models import (
     SessionModel, UserModel,
@@ -12,25 +7,31 @@ from database.models import (
 
 from dotenv import load_dotenv
 
-from fastapi import Request, HTTPException, Depends
+from fastapi import Depends, HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from jose import JWTError, jwt
 
 from logger import logger
+
 from modules.auth.abstract import (
     AbstractAuthHandler,
     AuthAbstract,
 )
 from modules.auth.jwt import JWTUser
-
-from modules.auth.schemes import EmailLoginScheme, UserJwtPayload, UserInfo
+from modules.auth.schemes import EmailLoginScheme, UserInfo, UserJwtPayload
 from modules.auth.validators import validate_user
+
+from pydantic import ValidationError
 
 from services.session import SessionService
 from services.user import UserService
 
+from settings import JWTConfig
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from settings import JWTConfig
 
 load_dotenv()
 
@@ -103,13 +104,12 @@ class JWTBearer(HTTPBearer):
 
         payload = self.get_payload(token)
 
-
         query = (
             select(UserModel)
             .where(
                 and_(
                     UserModel.id == payload.user_info.user_id,
-                    UserModel.email_verified == True
+                    UserModel.email_verified.is_(True)
                 )
             )
         )
@@ -127,7 +127,7 @@ class JWTBearer(HTTPBearer):
             .where(
                 and_(
                     SessionModel.id == payload.user_info.session_id,
-                    SessionModel.is_active == True
+                    SessionModel.is_active.is_(True)
                 )
             )
         )

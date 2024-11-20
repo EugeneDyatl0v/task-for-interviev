@@ -1,8 +1,8 @@
 import re
 
-from src.api.schemes.response import Response200Scheme
-
 from pydantic import BaseModel, Field, model_validator
+
+from src.api.schemes.response import Response200Scheme
 
 
 email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'

@@ -1,8 +1,11 @@
-from typing import List, Optional
+import http
+from typing import List
 from uuid import UUID
 
+from fastapi import HTTPException
+
 from pydantic import (
-    BaseModel, Field
+    BaseModel, Field, field_validator
 )
 
 
@@ -66,3 +69,19 @@ class JWTScheme(BaseModel):
             'TY3MTk4NjB9.7SyzVP3E2ZaWIJ44yi19xBcOY6H2WVDg5fah4Qb8MxU'
         ]
     )
+
+
+class ChangePasswordScheme(BaseModel):
+    old_password: str = Field(...)
+    new_password: str = Field(...)
+    repeat_password: str = Field(...)
+
+    @field_validator('repeat_password')
+    def check_passwords_match(cls, repeat_password, values):
+        new_password = values.data.get('new_password')
+        if new_password and repeat_password != new_password:
+            raise HTTPException(
+                status_code=http.HTTPStatus.BAD_REQUEST,
+                detail='Passwords do not match'
+            )
+        return repeat_password

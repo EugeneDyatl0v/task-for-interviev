@@ -1,15 +1,15 @@
 import http
 from datetime import datetime
 
-from src.api.schemes.registration import (
-    EmailConfirmationScheme
-)
-
 from fastapi import HTTPException
 
 from services.confirmation_code import ConfirmationCodeService
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.registration import (
+    EmailConfirmationScheme
+)
 
 
 async def abstract_confirmation(

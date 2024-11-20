@@ -1,18 +1,21 @@
 import datetime
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from src.api.schemes.registration import (
-    EmailRegisterScheme
-)
 from database.models import ConfirmationCodeModel, UserModel
+
 from logger import logger
+
 from modules.auth.helpers import get_password_hash
 from modules.common.helpers import generate_random_string
 from modules.common.mixins import SendEmailMixin
+
 from services.abstract import AbstractRegistration
 from services.user import UserService
+
 from settings import TemplatesConfig, UnisenderConfig
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.registration import EmailRegisterScheme
 
 
 class EmailRegistration(AbstractRegistration, SendEmailMixin):

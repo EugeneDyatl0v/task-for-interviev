@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from modules.auth.classes import EmailPasswordAuthHandler
 from modules.auth.schemes import EmailLoginScheme
 
+
 def get_login_handler(
         login_info: EmailLoginScheme
 ):

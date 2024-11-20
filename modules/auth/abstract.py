@@ -1,8 +1,5 @@
-import datetime
 import http
-import uuid
 from abc import ABC
-from typing import Union
 
 from database import Session
 from database.models import (
@@ -18,7 +15,6 @@ from jose import JWTError, jwt
 
 from modules.auth.helpers import get_session_by_id
 from modules.auth.schemes import EmailLoginScheme
-from modules.common.helpers import generate_random_string
 
 from settings import JWTConfig
 
@@ -355,7 +351,6 @@ class AuthAbstract(ABC):
     @staticmethod
     async def _get_session_for_confirm_code(user_id: str):
         raise NotImplementedError
-
 
 
 class AbstractAuthHandler(ABC):

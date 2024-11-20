@@ -1,24 +1,12 @@
 from typing import Union
 
-from modules.auth.classes import AuthUser, JWTBearer
-from services.user import UserService
-from src.api.auth.schemes import ChangePasswordScheme
-from src.api.helpers.auth import get_login_handler
-from src.api.schemes.auth import JWTScheme, LoginResponse
-from src.api.schemes.response import (
-    ExceptionScheme,
-    Response200Scheme,
-    jwt_bearer_responses,
-    Response400Scheme, Response403Scheme
-)
-
 from database import get_session
-
 
 from fastapi import (
     APIRouter, Depends, Request
 )
 
+from modules.auth.classes import AuthUser, JWTBearer
 from modules.auth.schemes import (
     EmailLoginScheme, UserInfo
 )
@@ -26,7 +14,19 @@ from modules.auth.validators import (
     validate_refresh_token
 )
 
+from services.user import UserService
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.helpers.auth import get_login_handler
+from src.api.schemes.auth import ChangePasswordScheme, JWTScheme, LoginResponse
+from src.api.schemes.response import (
+    ExceptionScheme,
+    Response200Scheme,
+    Response400Scheme,
+    Response403Scheme,
+    jwt_bearer_responses
+)
 
 
 router = APIRouter(

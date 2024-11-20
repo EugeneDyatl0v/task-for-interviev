@@ -1,15 +1,19 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from database import get_session
+
+from fastapi import APIRouter, Depends, Query
+
 from modules.auth.classes import JWTBearer
 from modules.auth.schemes import UserInfo
+
 from services.link import LinkManager
-from src.api.link.schemes import (
-    LinkResponseScheme,
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.link import (
     LinkOutScheme,
+    LinkResponseScheme,
     PageDataScheme
 )
 from src.api.schemes.response import (
@@ -17,6 +21,7 @@ from src.api.schemes.response import (
     Response200Scheme,
     jwt_bearer_responses
 )
+
 
 router = APIRouter(
     prefix='/link',

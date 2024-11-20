@@ -1,9 +1,5 @@
 import datetime
 
-from src.api.schemes.password_recovery import (
-    EmailRecoveryScheme
-)
-
 from database.models import ConfirmationCodeModel, UserModel
 
 from modules.common.helpers import generate_random_string
@@ -15,6 +11,8 @@ from services.user import UserService
 from settings import TemplatesConfig, UnisenderConfig
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.password_recovery import EmailRecoveryScheme
 
 
 class EmailPasswordRecovery(AbstractPasswordRecovery, SendEmailMixin):

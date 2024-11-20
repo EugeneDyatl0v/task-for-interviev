@@ -9,27 +9,30 @@ APP_NAME = "link_vault"
 class Database:
     prefix = 'link_vault_'
     url = os.environ.get('DATABASE_URL')
-    pool_size = os.environ.get(
-        'DB_ENGINE_OPTION_POOL_SIZE', default=5
+    pool_size = int(
+        os.environ.get(
+            'DB_ENGINE_OPTION_POOL_SIZE', default=5
+        )
     )
-    max_overflow = os.environ.get(
-        'DB_ENGINE_OPTION_MAX_OVERFLOW', default=50
+    max_overflow = int(
+        os.environ.get(
+            'DB_ENGINE_OPTION_MAX_OVERFLOW', default=50
+        )
     )
-    pool_recycle = os.environ.get(
-        'DB_ENGINE_OPTION_POOL_RECYCLE', default=600
+    pool_recycle = int(
+        os.environ.get(
+            'DB_ENGINE_OPTION_POOL_RECYCLE', default=600
+        )
     )
     pool_pre_ping = os.environ.get(
-        'DB_ENGINE_OPTION_POOL_PRE_PING', default='false'
+        'DB_ENGINE_OPTION_POOL_PRE_PING', default=False
     )
 
 
 @dataclasses.dataclass
 class AppConfig:
     secret_key = os.environ.get('APP_SECRET_KEY', default='secret')
-    debug = os.environ.get('APP_DEBUG', default='false')
-    send_confirmation_via_unisender: bool = os.environ.get(
-        'APP_SEND_CONFIRMATION_VIA_UNISENDER', default='false'
-    )
+    debug = os.environ.get('APP_DEBUG', default=False)
 
 
 @dataclasses.dataclass

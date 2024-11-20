@@ -1,9 +1,10 @@
 from typing import Optional
 from uuid import UUID
 
+from database.models import LinkType
+
 from pydantic import BaseModel
 
-from database.models import LinkType
 from src.api.schemes.response import DataResponseScheme
 
 

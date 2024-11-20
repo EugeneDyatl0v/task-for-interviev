@@ -1,13 +1,13 @@
+from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
+
+from settings import AppConfig
+
 from src.api.handlers import (
     internal_exception_handler,
     sc_response_exception_handler,
     validation_exception_handler
 )
-
-from fastapi import HTTPException
-from fastapi.exceptions import RequestValidationError
-
-from settings import AppConfig
 
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware

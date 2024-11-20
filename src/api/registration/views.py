@@ -1,14 +1,6 @@
 import datetime
 import http
 
-from src.api.helpers.registration import (
-    email_confirmation
-)
-from src.api.schemes.registration import (
-    EmailConfirmationOutScheme, EmailRegisterScheme, EmailResendCodeScheme,
-)
-from src.api.schemes.response import ExceptionScheme, Response200Scheme
-
 from database import get_session
 from database.models import ConfirmationCodeModel
 
@@ -24,6 +16,14 @@ from services.user import UserService
 from settings import TemplatesConfig, UnisenderConfig
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.helpers.registration import (
+    email_confirmation
+)
+from src.api.schemes.registration import (
+    EmailConfirmationOutScheme, EmailRegisterScheme, EmailResendCodeScheme,
+)
+from src.api.schemes.response import ExceptionScheme, Response200Scheme
 
 
 registration_router = APIRouter(
@@ -179,7 +179,6 @@ async def resend_code(
         template_id=UnisenderConfig.registration_template_id,
         email_address=request.email
     )
-
 
     await db_session.commit()
 

@@ -1,21 +1,28 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from database import get_session
+
+from fastapi import APIRouter, Depends, Query
+
 from modules.auth.classes import JWTBearer
 from modules.auth.schemes import UserInfo
+
 from services.collection import CollectionManager
-from src.api.collection.shemes import (
-    CollectionResponseScheme,
-    CollectionOutScheme,
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.collection import (
     CollectionDataScheme,
+    CollectionOutScheme,
+    CollectionResponseScheme,
     LinkListResponseScheme
 )
-from src.api.link.schemes import LinkOutScheme
-from src.api.schemes.response import jwt_bearer_responses, ExceptionScheme, \
-    Response200Scheme
+from src.api.schemes.link import LinkOutScheme
+from src.api.schemes.response import (
+    ExceptionScheme,
+    Response200Scheme,
+    jwt_bearer_responses
+)
 
 
 router = APIRouter(

@@ -1,17 +1,6 @@
 import datetime
 import http
 
-from src.api.helpers.password_recovery import (
-    create_reset_code_scheme,
-    process_password_recovery
-)
-from src.api.schemes.password_recovery import (
-    ConfirmationCodeResponseScheme,
-    EmailRecoveryScheme,
-    PasswordScheme,
-)
-from src.api.schemes.response import ExceptionScheme, Response200Scheme
-
 from database import get_session
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,6 +12,18 @@ from services.password_recovery import (
 from services.session import SessionService
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.helpers.password_recovery import (
+    create_reset_code_scheme,
+    process_password_recovery
+)
+from src.api.schemes.password_recovery import (
+    ConfirmationCodeResponseScheme,
+    EmailRecoveryScheme,
+    PasswordScheme,
+)
+from src.api.schemes.response import ExceptionScheme, Response200Scheme
+
 
 password_recovery_router = APIRouter(
     prefix='/password-recovery',

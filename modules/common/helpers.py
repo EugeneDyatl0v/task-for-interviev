@@ -2,12 +2,13 @@ import random
 import string
 from typing import Any
 
+from fastapi.templating import Jinja2Templates
+
+import httpx
+
 from jinja2 import Template
 
 from logger import logger
-
-import httpx
-from fastapi.templating import Jinja2Templates
 
 from settings import UnisenderConfig
 
@@ -46,7 +47,6 @@ def remove_none_values(data: dict | list | Any) -> dict | list | Any:
         }
     else:
         return data
-
 
 
 async def general_api_call(
@@ -95,7 +95,7 @@ async def general_api_call(
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            url=f'{f'https://api.unisender.com/en/api/'}{method_name}',
+            url=f'https://api.unisender.com/en/api/{method_name}',
             params=params,
             data=data
         )
@@ -124,7 +124,6 @@ def get_rendered_html(
     """Renders raw_html with replacement parameters and returns it"""
     template = Template(raw_html)
     return template.render(params)
-
 
 
 async def send_email(

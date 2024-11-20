@@ -3,14 +3,6 @@ import http
 from typing import Optional
 from uuid import UUID
 
-from modules.auth.helpers import get_password_hash
-from modules.auth.validators import verify_password
-from src.api.schemes.users import (
-    ClientEditUserScheme,
-    EditUserScheme,
-    UserFilterScheme,
-)
-
 from database.customize import CustomAsyncSession
 from database.models import UserModel
 
@@ -19,10 +11,19 @@ from fastapi import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate
 
+from modules.auth.helpers import get_password_hash
+from modules.auth.validators import verify_password
+
 from services.session import SessionService
 
 from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.user import (
+    ClientEditUserScheme,
+    EditUserScheme,
+    UserFilterScheme,
+)
 
 
 class UserService:
@@ -233,4 +234,3 @@ class UserService:
             user_id=user_id,
             db_session=db_session
         )
-

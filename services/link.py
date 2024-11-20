@@ -1,15 +1,18 @@
 import http
 from uuid import UUID
 
-import httpx
-from fastapi import HTTPException
 from bs4 import BeautifulSoup
 
-from sqlalchemy import select, and_
+from database.models import LinkModel, LinkType
+
+from fastapi import HTTPException
+
+import httpx
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import LinkModel, LinkType
-from src.api.link.schemes import PageDataScheme
+from src.api.schemes.link import PageDataScheme
 
 
 class LinkManager:
@@ -48,7 +51,9 @@ class LinkManager:
                 )
             ),
             image_url=og_image["content"] if og_image else None,
-            link_type=LinkType[og_type["content"]] if og_type else LinkType.website
+            link_type=(
+                LinkType[og_type["content"]] if og_type else LinkType.website
+            )
         )
 
     async def get(

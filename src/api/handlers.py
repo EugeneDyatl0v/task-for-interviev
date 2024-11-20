@@ -1,5 +1,10 @@
 import traceback
 
+from fastapi import Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 from src.api.schemes.response import (
     Response400Scheme,
     Response401Scheme,
@@ -8,11 +13,6 @@ from src.api.schemes.response import (
     Response422Scheme,
     Response500Scheme
 )
-
-from fastapi import Request, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 

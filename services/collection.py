@@ -2,14 +2,19 @@ import http
 from typing import List
 from uuid import UUID
 
+from database.models import (
+    CollectionModel,
+    LinkCollectionAssociation,
+    LinkModel
+)
+
 from fastapi import HTTPException
-from sqlalchemy import select, and_
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import CollectionModel, LinkCollectionAssociation, \
-    LinkModel
-from src.api.collection.shemes import CollectionDataScheme
+from src.api.schemes.collection import CollectionDataScheme
 
 
 class CollectionManager:

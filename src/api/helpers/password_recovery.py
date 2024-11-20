@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from src.api.schemes.password_recovery import ResetCodeSchemeOut
-
 from database.models import ConfirmationCodeModel
 
 from modules.auth.helpers import get_password_hash
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.schemes.password_recovery import ResetCodeSchemeOut
 
 
 async def create_reset_code_scheme(

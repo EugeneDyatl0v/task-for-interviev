@@ -1,13 +1,7 @@
 version: "3"
 
 services:
-  auth_flake8:
-    build:
-      context: ../..
-      dockerfile: contrib/docker/flake8/Dockerfile
-
-
-  auth_postgres:
+  postgres:
     build:
       context: ../..
       dockerfile: contrib/docker/postgres/Dockerfile
@@ -21,23 +15,23 @@ services:
       - "-c"
       - "config_file=/etc/postgresql.conf"
       - "-p"
-      - "5433"
+      - "5432"
     ports:
-      - "5433:5433"
+      - "5432:5432"
     volumes:
-      - auth_pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
       - ./postgres/postgresql.conf:/etc/postgresql.conf
 
 
-  auth_migrations:
+  migrations:
     depends_on:
-      - "auth_postgres"
+      - "postgres"
     build:
       context: ../..
       dockerfile: contrib/docker/fastapi/Dockerfile
     command:
       - "contrib/docker/wait-for-it.sh"
-      - "auth_postgres:5433"
+      - "postgres:5432"
       - "--"
       - "python"
       - "-m"
@@ -47,24 +41,24 @@ services:
       - "upgrade"
       - "head"
     environment:
-      - "DATABASE_URL=${DATABASE_URL}"
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - ../../:/app
 
 
-  auth_nginx:
+  nginx:
     build:
       context: ../..
       dockerfile: contrib/docker/nginx/Dockerfile
     depends_on:
-      - "auth_api"
+      - "api"
     ports:
-      - "8002:8002"
+      - "8001:8001"
 
 
-  auth_api:
+  api:
     depends_on:
-      - "auth_migrations"
+      - "migrations"
     build:
       context: ../..
       dockerfile: contrib/docker/fastapi/Dockerfile
@@ -72,23 +66,29 @@ services:
       - "uvicorn"
       - "src.api:app"
       - "--host"
-      - "auth_api"
+      - "api"
       - "--port"
-      - "8005"
+      - "8000"
       - "--reload"
     environment:
-      - "DATABASE_URL=${DATABASE_URL}"
-      - "UNISENDER_API_KEY=${UNISENDER_API_KEY}"
-      - "UNISENDER_SENDER_NAME=${UNISENDER_SENDER_NAME}"
-      - "UNISENDER_SENDER_EMAIL=${UNISENDER_SENDER_EMAIL}"
-      - "UNISENDER_DEFAULT_LIST_ID=${UNISENDER_DEFAULT_LIST_ID}"
-      - "UNISENDER_REGISTER_CODE_TEMPLATE_ID=${UNISENDER_REGISTER_CODE_TEMPLATE_ID}"
-      - "UNISENDER_PASSWORD_RESET_TEMPLATE_ID=${UNISENDER_PASSWORD_RESET_TEMPLATE_ID}"
-      - "UNISENDER_SENDING_TIMEOUT=${UNISENDER_SENDING_TIMEOUT}"
-      - "APP_JWT_SECRET=${APP_JWT_SECRET}"
+      APP_SECRET_KEY: ${APP_SECRET_KEY}
+      APP_DEBUG: ${APP_DEBUG}
+      DATABASE_URL: ${DATABASE_URL}
+      DB_ENGINE_OPTION_POOL_SIZE: ${DB_ENGINE_OPTION_POOL_SIZE}
+      DB_ENGINE_OPTION_MAX_OVERFLOW: ${DB_ENGINE_OPTION_MAX_OVERFLOW}
+      DB_ENGINE_OPTION_POOL_RECYCLE: ${DB_ENGINE_OPTION_POOL_RECYCLE}
+      DB_ENGINE_OPTION_POOL_PRE_PING: ${DB_ENGINE_OPTION_POOL_PRE_PING}
+      UNISENDER_API_KEY: ${UNISENDER_API_KEY}
+      UNISENDER_SENDER_NAME: ${UNISENDER_SENDER_NAME}
+      UNISENDER_SENDER_EMAIL: ${UNISENDER_SENDER_EMAIL}
+      UNISENDER_DEFAULT_LIST_ID: ${UNISENDER_DEFAULT_LIST_ID}
+      UNISENDER_REGISTER_CODE_TEMPLATE_ID: ${UNISENDER_REGISTER_CODE_TEMPLATE_ID}
+      UNISENDER_PASSWORD_RESET_TEMPLATE_ID: ${UNISENDER_PASSWORD_RESET_TEMPLATE_ID}
+      UNISENDER_SENDING_TIMEOUT: ${UNISENDER_SENDING_TIMEOUT}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     volumes:
       - ../../:/app
 
 
 volumes:
-  auth_pg_data:
+  pg_data:
