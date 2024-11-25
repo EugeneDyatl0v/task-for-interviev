@@ -1,14 +1,22 @@
-import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import random
 from typing import List
+import uuid
+
+from database.models import (
+    CollectionModel,
+    LinkCollectionAssociation,
+    LinkModel,
+    LinkType,
+    UserModel
+)
+
+from logger import logger
+
+from settings import Database
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-from database.models import UserModel, LinkModel, LinkType, CollectionModel, \
-    LinkCollectionAssociation
-from settings import Database
 
 
 SYNC_DATABASE_URL = Database.url.replace('+asyncpg', '')
@@ -26,7 +34,7 @@ def create_test_data():
         session.commit()
     except Exception as e:
         session.rollback()
-        print(f"Error during cleanup: {e}")
+        logger.exception(f"Error during cleanup: {e}")
 
 
     users: List[UserModel] = []
@@ -36,8 +44,10 @@ def create_test_data():
             email=f"user{i}@example.com",
             password_hash=f"hash{i}",
             email_verified=True,
-            created_at=datetime.utcnow() - timedelta(days=i),
-            updated_at=datetime.utcnow()
+            created_at=(
+                    datetime.now(UTC).replace(tzinfo=None) - timedelta(days=i)
+            ),
+            updated_at=datetime.now(UTC).replace(tzinfo=None)
         )
         users.append(user)
 
@@ -56,8 +66,8 @@ def create_test_data():
                 image_url=f"https://example.com/images/{j + 1}.jpg",
                 link_type=random.choice(list(LinkType)),
                 user_id=user.id,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                created_at=datetime.now(UTC).replace(tzinfo=None),
+                updated_at=datetime.now(UTC).replace(tzinfo=None)
             )
             all_links.append(link)
 
@@ -72,8 +82,8 @@ def create_test_data():
                 title=f"Collection {k + 1} for {user.email}",
                 description=f"Test collection {k + 1} description",
                 user_id=user.id,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                created_at=datetime.now(UTC).replace(tzinfo=None),
+                updated_at=datetime.now(UTC).replace(tzinfo=None)
             )
             all_collections.append(collection)
 
@@ -98,10 +108,10 @@ def create_test_data():
 
     try:
         session.commit()
-        print("Test data successfully created!")
+        logger.info("Test data successfully created!")
     except Exception as e:
         session.rollback()
-        print(f"Error creating test data: {e}")
+        logger.exception(f"Error creating test data: {e}")
     finally:
         session.close()
 
