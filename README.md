@@ -94,3 +94,18 @@ If you have any questions or suggestions, please contact the project author.
 | unisender              | UNISENDER_REGISTER_CODE_TEMPLATE_ID  | int  | -                                                                | 6319230                                                | ID of Unisender template to be sent to user after registration                                                                                                                                                          |
 | unisender              | UNISENDER_PASSWORD_RESET_TEMPLATE_ID | int  | -                                                                | 6319230                                                | ID of Unisender template to be sent to user for password recovery                                                                                                                                                       |
 | unisender              | UNISENDER_SENDING_TIMEOUT            | int  | -                                                                | 10                                                     | ID of Unisender template to be sent to user for password recovery                                                                                                                                                       |
+
+
+## SQL Task
+The mock database is created when docker compose is launched.
+
+### SQL query:
+```sql
+SELECT u.email, COUNT(l.id) as count_links
+FROM link_vault_users u
+LEFT JOIN link_vault_links l ON u.id = l.user_id
+WHERE u.deleted_at IS NULL
+GROUP BY u.id, u.email, u.created_at
+ORDER BY COUNT(l.id) DESC, u.created_at ASC
+LIMIT 10;
+```

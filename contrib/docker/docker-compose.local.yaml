@@ -90,5 +90,25 @@ services:
       - ../../:/app
 
 
+  sql_test:
+    depends_on:
+      - "migrations"
+    build:
+      context: ../..
+      dockerfile: contrib/docker/sql_test/Dockerfile
+    command:
+      - "python"
+      - "-m"
+      - "fill_db"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DB_ENGINE_OPTION_POOL_SIZE: ${DB_ENGINE_OPTION_POOL_SIZE}
+      DB_ENGINE_OPTION_MAX_OVERFLOW: ${DB_ENGINE_OPTION_MAX_OVERFLOW}
+      DB_ENGINE_OPTION_POOL_RECYCLE: ${DB_ENGINE_OPTION_POOL_RECYCLE}
+      DB_ENGINE_OPTION_POOL_PRE_PING: ${DB_ENGINE_OPTION_POOL_PRE_PING}
+    volumes:
+      - ../../:/app
+
+
 volumes:
   pg_data:
